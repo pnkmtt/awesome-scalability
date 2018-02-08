@@ -1,0 +1,8 @@
+---
+# defaults file for kafka-zookeeper
+scala_ver: "2.11"
+kafka_ver: "0.10.2.1"
+
+kafka_mirror_url: "http://www-eu.apache.org/dist/kafka/{{ kafka_ver }}/"
+kafka_bin_pkg: "kafka_{{ scala_ver }}-{{ kafka_ver }}.tgz"
+

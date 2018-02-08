@@ -1,0 +1,7 @@
+---
+  - name: update OS
+    hosts: tag_Role_kafka_zookeeper
+    become: true
+
+    roles:
+    - kafka-zookeeper

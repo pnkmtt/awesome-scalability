@@ -1,0 +1,5 @@
+---
+# Packages to install
+install_pkgs:
+  - default-jdk
+  - zookeeperd

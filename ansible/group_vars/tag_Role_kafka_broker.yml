@@ -1,0 +1,8 @@
+# tag_Role_kafka_broker.yml
+# --------------------
+# 
+# Variables for EC2 instances with role "kafka_broker"
+---
+ansible_ssh_private_key_file: ~/.ssh/nova.pem
+ansible_user: ubuntu
+ansible_become: true

@@ -1,0 +1,6 @@
+KAFKA_HOME=/usr/local/kafka
+# Add Hadoop bin/ directory to PATH
+PATH=$PATH:$KAFKA_HOME/bin:/bin:/usr/bin
+# Enable JMX monitoring
+#JMX_PORT=9999
+

@@ -1,0 +1,14 @@
+---
+# handlers file for kafka-zookeeper
+- name: restart kafka-zookeeper
+  service:
+    name: kafka-zookeeper
+    enabled: yes
+    state: restarted
+
+# handlers file for kafka-zookeeper
+- name: restart zookeeper
+  service:
+    name: zookeeper
+    enabled: yes
+    state: restarted

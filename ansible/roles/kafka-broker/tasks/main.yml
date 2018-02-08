@@ -1,0 +1,29 @@
+---
+# tasks file for kafka-broker
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+- parted:
+    device: /dev/xvdf
+    number: 1
+    state: present
+  become: yes
+  ignore_errors: true
+- filesystem:
+    fstype: xfs
+    dev: /dev/xvdf1
+  become: yes
+  ignore_errors: true
+- mount:
+    path: /kafka-data
+    src: /dev/xvdf1
+    fstype: xfs
+    state: mounted
+  become: yes
+  ignore_errors: true
+
+
+

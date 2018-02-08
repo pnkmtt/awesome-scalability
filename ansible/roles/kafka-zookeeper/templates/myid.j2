@@ -1,0 +1,11 @@
+{% for server in groups['tag_Role_kafka_zookeeper'] %}
+{% if server.host is defined %}
+{% if server.host == inventory_hostname %}
+{{ server.id }}
+{% endif %}
+{% else %}
+{% if server == inventory_hostname %}
+{{ loop.index }}
+{% endif %}
+{% endif %}
+{% endfor %}

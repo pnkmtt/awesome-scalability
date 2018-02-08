@@ -1,0 +1,8 @@
+# tag_Role_kafka_zookeeper.yml
+# --------------------
+# 
+# Variables for EC2 instances with role "kafka_zookeeper"
+---
+ansible_ssh_private_key_file: ~/.ssh/nova.pem
+ansible_user: ubuntu
+ansible_become: true

@@ -1,0 +1,72 @@
+---
+# create a temp directory to put install package into
+- name: create /tmp/zookeeper directory
+  file:
+    path: /tmp/zookeeper
+    state: directory
+
+- name: Overwrite myid file.
+  template: src=myid.j2 dest=/etc/zookeeper/conf/myid force="yes"
+  #template: src=myid.j2 dest={{zookeeper_conf_dir}}/conf/myid force="{{ zookeeper_force_myid }}"
+  #tags: deploy
+  notify:
+    - restart kafka-zookeeper
+
+## dump the zookeeper id to a file
+#- name: create /tmp/zookeeper/myid file
+#  shell: echo {{ hostvars[inventory_hostname]['ec2_tag_Zookeeperid'] }} > /tmp/zookeeper/myid
+#
+# update ownership of the temp directory
+- name: change Own
+  file:
+    path: /etc/zookeeper/conf/
+    owner: kafka
+    group: kafka
+    recurse: yes
+
+# publish our enviroment details file from files directory
+- name: add kafka environment defaults
+  copy:
+    src: files/kafka.default
+    dest: /etc/default/kafka
+
+# install start script into systemd
+- name: add kafka systemd service
+  copy:
+    src: files/kafka-zookeeper.service
+    dest: /etc/systemd/system/kafka-zookeeper.service
+    when: ansible_distribution == 'Centos'
+
+
+# populate zookeeper.properties from the template directory and restart zookeeper
+- name: configure kafka
+  template:
+    src: zookeeper.properties.j2
+    dest: /usr/local/kafka/config/zookeeper.properties
+    owner: kafka
+    group: kafka
+    force: yes
+  notify:
+    - restart kafka-zookeeper
+
+# populate zookeeper.properties from the template directory and restart zookeeper
+- name: configure kafka
+  file:
+    src: /usr/local/kafka/config/zookeeper.properties
+    dest: /etc/zookeeper/conf/zoo.cfg
+    owner: kafka
+    group: kafka
+    state: link
+    force: yes
+    when: ansible_distribution == 'Ubuntu'
+  notify:
+    - restart zookeeper
+
+- name: Show zookeeper status
+  shell: /bin/echo mntr | nc {{ ec2_private_dns_name }} 2181 | grep zk_server_state
+  register: echo_zoo_mntr
+  tags:
+    - notification
+
+- debug: 
+    var: echo_zoo_mntr

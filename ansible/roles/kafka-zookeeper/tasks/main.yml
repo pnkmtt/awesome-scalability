@@ -1,0 +1,83 @@
+---
+# tasks file for kafka-zookeeper
+# added for syntax compatability
+- name: require 2.2.X version of ansible minimum
+  assert:
+    that:
+      - ansible_version.major >= 2
+      - ansible_version.minor >= 2
+
+# are we on centos or umbuntu
+- name: test for supported distribution
+  assert:
+    that: >
+      ansible_os_family == "RedHat" or
+      ansible_os_family == "Debian"
+    msg: "{{ ansible_os_family }} must be either RedHat or Debian"
+
+# capture the varibles passed for each specific OS RedHat or Debian in vars directory
+- name: add the os specific varibles
+  include_vars: "{{ ansible_os_family }}.yml"
+
+# Setup to pass os or distro specific requirements
+- name: os specific prep
+  include: "{{ item }}"
+  with_first_found:
+    - files:
+        - installs/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml
+        - installs/{{ ansible_distribution }}-{{ ansible_distribution_release }}.yml
+        - installs/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml
+        - installs/{{ ansible_distribution }}.yml
+        - installs/{{ ansible_os_family }}.yml
+      skip: true
+
+# install specific packages per OS captured from include_vars above
+- name: install kafka packaged dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ install_pkgs }}"
+
+# add the kafka user
+- name: add kafka user
+  user:
+    name: kafka
+    comment: Kafka User
+    createhome: no
+    shell: /bin/bash
+    state: present
+
+#- name: install zookeeper packages and dependencies
+- name: Fetch kafka bins locally
+  become: false
+  local_action: get_url url="{{ kafka_mirror_url }}{{ kafka_bin_pkg }}" dest="/var/tmp"
+  run_once: true
+
+# expand the kafka package into /usr/local
+- unarchive:
+    src: "/var/tmp/{{ kafka_bin_pkg }}"
+    dest: /usr/local/
+    owner: kafka
+    group: kafka
+    creates: "/usr/local/{{ kafka_bin_pkg.split('.tgz')[0] }}"
+
+# link /usr/local/kafka to /usr/local/kafka_2.11-0.10.2.1 ( example )
+- file:
+    src: "/usr/local/{{ kafka_bin_pkg.split('.tgz')[0] }}"
+    dest: /usr/local/kafka
+    owner: kafka
+    group: kafka
+    state: link
+
+# point kafka user's home directory to /usr/local/kafka
+- name: change kafka user home directory
+  user:
+    name: kafka
+    home: /usr/local/kafka
+    state: present
+
+# bring in the tasks from zookeeper.yml to build zookeeper
+- name: include zookeeper tasks
+  include: zookeeper.yml
+  when: "'tag_Role_kafka_zookeeper' in group_names"
+  static: no

@@ -1,0 +1,22 @@
+---
+# tasks file for kafka-bootstrap
+- name: update /etc/hosts
+  template:
+    src: hostsfile.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    force: yes
+
+- name: apt update
+  apt:
+    update_cache: yes
+  become: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: apt upgrade
+  apt:
+    upgrade: dist
+  become: yes
+  when: ansible_distribution == 'Ubuntu'
+
